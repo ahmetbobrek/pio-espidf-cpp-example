@@ -1,21 +1,19 @@
-#include <stdio.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/gpio.h"
-#include "sdkconfig.h"
-#include "FancyBlinker.h"
+#include "acs712.h"
+const int sensorIn = A0;
+ACS712_Irms acs712;
 
-/* create C++ object */
-#define BLINKY_GPIO 2
-FancyBlinker blinker(BLINKY_GPIO);
-
-/* the app_main entry point **must** have C linkage. Thus extern "C". */
-extern "C" void app_main()
+void setup()
 {
-    printf("Entry point\n");
-    blinker.Setup();
-    while(1) {
-        blinker.BlinkyBlinky();
-        printf("Blinky\n");
-    }
+    Serial.begin(9600);
+    acs712.ADCSamples = 1024.0;                // 1024 samples
+    acs712.mVperAmp = scaleFactor::ACS712_20A; // use 100 for 20A Module and 66 for 30A Module and 185 for 5A Module
+    acs712.maxADCVolt = 5.0;                   // 5 Volts
+    acs712.ADCIn = A0;
+    acs712.Init();
+}
+
+void loop()
+{
+    double AmpsRMS = acs712.Process();
+    // Serial.println("Amps RMS: " + String(AmpsRMS));
 }
